@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils.markdown import bold, hbold
+from aiogram.utils.markdown import hbold
 
 from database.database import User, Dish
 from initialise import dp
@@ -125,13 +125,13 @@ async def order_user_handler(call: CallbackQuery, state: FSMContext):
         parse_mode='HTML'
     )
     data = await state.get_data()
-    if data:
+    if data.get("data_set"):
         data_set = data.get("data_set")
         for val in data_set:
             await call.message.answer(
                 text=val,
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
-                    text="Убрать",
+                    text=f"Убрать {val}",
                     callback_data="remove_dish:{0}".format(val)
                 )]])
             )
@@ -173,7 +173,7 @@ async def dish_handler(call: CallbackQuery):
     dish = call.data.split(':')[1]
     dishes = Dish.get_dishes(dish)
     await call.message.edit_text(
-        text=hbold("Выберите блюдо"),
+        text=hbold("ВЫБЕРИТЕ БЛЮДО"),
         parse_mode='HTML'
     )
     for val in dishes:
