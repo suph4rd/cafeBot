@@ -48,6 +48,12 @@ class User(base):
         session.add(new_user)
         session.commit()
 
+    @staticmethod
+    def update_user(user_dict: dict):
+        user_id = user_dict.get("user_id")
+        session.query(User).filter(User.user_id == user_id).update(user_dict)
+        session.commit()
+
 
 template_category_m2m = Table('template_category_m2m',
                             base.metadata,
@@ -83,8 +89,6 @@ class Category(base):
     @staticmethod
     def get_catygoryes():
         query = session.query(Category).all()
-        for x in query:
-            print(x.category_name)
         return query
 
 

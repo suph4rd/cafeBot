@@ -60,10 +60,16 @@ async def registration_phone_number_handler(message: types.Message, state: FSMCo
             }
     data = await state.get_data()
     user["fio"] = data.get("fio")
-    User.create_user(user)
+    is_active = User.check_user_is_active(user["user_id"])
+    if not is_active:
+        User.create_user(user)
+    else:
+        User.update_user(user)
+        pass # обновить пользователя
     # функция на сохранение юзера в bd
     await message.answer("Регистрация прошла успешно!")
     await state.finish()
+    await main_menu_handler(message)
 
 
 @dp.message_handler(commands=['start'])
@@ -91,6 +97,14 @@ async def main_menu_handler(message: types.Message):
     await OrderUser.start_order.set()
 
 
+@dp.callback_query_handler(text=["change_user"], state=[OrderUser.start_order, None])
+async def menu_handler(call: CallbackQuery, state: FSMContext):
+    '''Go change informations about user'''
+    await state.finish()
+    await Registration.not_regtration.set()
+    await registration_not_regtration_handler(call.message)
+
+
 @dp.callback_query_handler(text=["menu", "to_menu"], state=OrderUser.start_order)
 async def menu_handler(call: CallbackQuery):
     '''Select category'''
@@ -105,7 +119,6 @@ async def order_user_handler(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     if data:
         data_set = data.get("data_set")
-        print(data_set)
         for val in data_set:
             await call.message.answer(
                 text=val,
