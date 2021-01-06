@@ -21,7 +21,6 @@ class User(base):
     date_create = Column(DateTime)
     is_active = Column(Boolean)
     phone_number = Column(String)
-    order_list = relationship("OrderList", backref="parent")
 
     @staticmethod
     def check_user_exists(user_id):
@@ -99,7 +98,6 @@ class Dish(base):
     dish_description = Column(String)
     dish_price = Column(DECIMAL)
     dish_photo = Column(String)
-    order_list = relationship("OrderList")
     category = relationship(
         "Category",
         secondary=dish_category_m2m,
@@ -119,10 +117,12 @@ class Dish(base):
 class OrderList(base):
     __tablename__ = 'OrderList'
     id = Column(Integer, primary_key=True)
-    user = Column(Integer, ForeignKey("User.id"))
-    category = Column(String)
-    dish = Column(Integer, ForeignKey("Dish.id"))
-    date = Column(DateTime)
+    user_name = Column(String)
+    user_phone_number = Column(String)
+    user_id = Column(Integer)
+    dish_name = Column(String)
+    dish_price = Column(DECIMAL)
+    date_create = Column(DateTime)
     is_active = Column(Boolean)
 
 
