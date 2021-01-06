@@ -3,31 +3,29 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.markdown import hbold
 import handlers.autorization as autorization
+import handlers.admin_handlers as admin_handlers
+from config import ADMIN_ID
 from database.database import Dish
 import handlers.decorators as dec
 from initialise import dp
 from keyboards.inline_keyboard import menu_keyboard, category_keyboard
-
 from states.states import Registration, OrderUser
-
-
-# @dp.message_handler(content_types=['photo'])
-# @check_autorization
-# async def start_handler(message):
-#     await message.photo[-1].download(f"photo/{message.photo[-1]['file_id']}.jpg")
-#     await message.answer("Фото сохранено!")
 
 
 @dp.message_handler(state=[OrderUser.start_order, None])
 @dec.check_autorization
 async def main_menu_handler(message: types.Message):
     '''User main menu'''
-    await message.answer(
-        text=hbold("ГЛАВНОЕ МЕНЮ"),
-        parse_mode='HTML',
-        reply_markup=menu_keyboard
-    )
-    await OrderUser.start_order.set()
+    user_id = message['chat']['id']
+    if user_id == ADMIN_ID:
+        await admin_handlers.admin_main_menu_handler(message)
+    else:
+        await message.answer(
+            text=hbold("ГЛАВНОЕ МЕНЮ"),
+            parse_mode='HTML',
+            reply_markup=menu_keyboard
+        )
+        await OrderUser.start_order.set()
 
 
 @dp.callback_query_handler(text=["change_user"], state=[OrderUser.start_order, None])

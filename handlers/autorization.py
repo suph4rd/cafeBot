@@ -1,6 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-import handlers.user_handlers as user_handlers
+import handlers.admin_handlers as admin_handlers
 from database.database import User
 from initialise import dp
 from states.states import Registration
@@ -12,7 +12,7 @@ import handlers.decorators as dec
 async def start_handler(message: types.Message):
     '''Bot entrypoint'''
     await message.answer("Приветствуем вас в телеграмм боте кафе София")
-    await user_handlers.main_menu_handler(message)
+    await admin_handlers.admin_main_menu_handler(message)
 
 
 @dp.message_handler(state=Registration.not_regtration)
@@ -52,8 +52,6 @@ async def registration_phone_number_handler(message: types.Message, state: FSMCo
         User.create_user(user)
     else:
         User.update_user(user)
-        pass # обновить пользователя
-    # функция на сохранение юзера в bd
     await message.answer("Регистрация прошла успешно!")
     await state.finish()
-    await user_handlers.main_menu_handler(message)
+    await admin_handlers.admin_main_menu_handler(message)
