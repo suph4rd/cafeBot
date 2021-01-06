@@ -1,17 +1,17 @@
+from handlers.decorators import check_autorization
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-import handlers.admin_handlers as admin_handlers
 from database.database import User
 from initialise import dp
 from states.states import Registration
-import handlers.decorators as dec
 
 
 @dp.message_handler(commands=['start'])
-@dec.check_autorization
+@check_autorization
 async def start_handler(message: types.Message):
     '''Bot entrypoint'''
     await message.answer("Приветствуем вас в телеграмм боте кафе София")
+    from handlers import admin_handlers
     await admin_handlers.admin_main_menu_handler(message)
 
 

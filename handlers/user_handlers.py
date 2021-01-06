@@ -2,18 +2,17 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.markdown import hbold
-import handlers.autorization as autorization
-import handlers.admin_handlers as admin_handlers
 from config import ADMIN_ID
 from database.database import Dish
-import handlers.decorators as dec
+from handlers import admin_handlers, autorization
+from handlers.decorators import check_autorization
 from initialise import dp
 from keyboards.inline_keyboard import menu_keyboard, category_keyboard
 from states.states import Registration, OrderUser
 
 
 @dp.message_handler(state=[OrderUser.start_order, None])
-@dec.check_autorization
+@check_autorization
 async def main_menu_handler(message: types.Message):
     '''User main menu'''
     user_id = message['chat']['id']

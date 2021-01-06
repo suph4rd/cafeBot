@@ -1,8 +1,6 @@
 from config import ADMIN_ID
 from database.database import User
-import handlers.autorization as autorization
 from states.states import Registration
-import handlers.user_handlers as user_handlers
 
 
 def check_autorization(func):
@@ -16,7 +14,8 @@ def check_autorization(func):
         is_active = User.check_user_is_active(user_id)
         if not exists:
             await Registration.not_regtration.set()
-            await autorization.registration_not_regtration_handler(message)
+            from handlers.autorization import registration_not_regtration_handler
+            await registration_not_regtration_handler(message)
         elif is_active:
             await func(message)
         else:
@@ -34,5 +33,5 @@ def check_admin(func):
         if user_id == ADMIN_ID:
             await func(message)
         else:
-            await user_handlers.main_menu_handler(message)
+            await main_menu_handler(message)
     return wrapper
