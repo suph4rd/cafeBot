@@ -1,12 +1,15 @@
-from handlers.decorators import check_admin
+from aiogram.utils.markdown import hbold
+
+from handlers.decorators import check_admin, check_authorization
 from aiogram import types
 from initialise import dp
 
 
 @dp.message_handler()
+@check_authorization
 @check_admin
 async def admin_main_menu_handler(message: types.Message):
-    await message.answer(text="ГЛАВНОЕ МЕНЮ АДМИНИСТРАТОРА")
+    await message.answer(text=hbold("ГЛАВНОЕ МЕНЮ АДМИНИСТРАТОРА"))
 
 
 # @dp.message_handler(content_types=['photo'])

@@ -1,4 +1,4 @@
-from handlers.decorators import check_autorization
+from handlers.decorators import check_authorization
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from database.database import User
@@ -7,7 +7,7 @@ from states.states import Registration
 
 
 @dp.message_handler(commands=['start'])
-@check_autorization
+@check_authorization
 async def start_handler(message: types.Message):
     '''Bot entrypoint'''
     await message.answer("Приветствуем вас в телеграмм боте кафе София")
@@ -16,7 +16,7 @@ async def start_handler(message: types.Message):
 
 
 @dp.message_handler(state=Registration.not_regtration)
-async def registration_not_regtration_handler(message):
+async def registration_not_registration_handler(message):
     '''
     Enter personal data
     :param message: first name, last name and middle name
@@ -54,4 +54,5 @@ async def registration_phone_number_handler(message: types.Message, state: FSMCo
         User.update_user(user)
     await message.answer("Регистрация прошла успешно!")
     await state.finish()
+    from handlers import admin_handlers
     await admin_handlers.admin_main_menu_handler(message)
