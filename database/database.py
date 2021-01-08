@@ -1,6 +1,7 @@
 import datetime
 
-from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignKey, DateTime, Boolean, Table, exists
+from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignKey, DateTime, Boolean, Table, exists, \
+    Date
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -122,8 +123,48 @@ class OrderList(base):
     user_id = Column(Integer)
     dish_name = Column(String)
     dish_price = Column(DECIMAL)
-    date_create = Column(DateTime)
+    date_create = Column(Date)
     is_active = Column(Boolean)
+
+    @staticmethod
+    def get_orders():
+        query = session.query(
+            OrderList.user_name,
+            OrderList.user_phone_number,
+            OrderList.dish_name,
+            OrderList.dish_price,
+        ).order_by(OrderList.user_name) \
+        .filter(OrderList.date_create == datetime.date.today())\
+        .filter(OrderList.is_active == True)
+        print(query)
+
+    @staticmethod
+    def check_order_today(user_id):
+        query = session.query(exists().where(OrderList.user_id == user_id)\
+            .where(OrderList.date_create == datetime.date.today()))\
+            .scalar()
+        return query
+
+    @staticmethod
+    def accept_order(data_set: set, user_id):
+        user = session.query(User.fio, User.phone_number)\
+            .filter(User.user_id == user_id)\
+            .all()
+        dishes_price = session.query(Dish.dish_name, Dish.dish_price) \
+                .filter(Dish.dish_name.in_(data_set))\
+                .all()
+        for query in dishes_price:
+            order = OrderList(
+                user_name=user[0].fio,
+                user_phone_number=user[0].phone_number,
+                user_id=user_id,
+                dish_name=query.dish_name,
+                dish_price = query.dish_price,
+                date_create = datetime.date.today(),
+                is_active = True
+            )
+            session.add(order)
+        session.commit()
 
 
 if __name__ == "__main__":
