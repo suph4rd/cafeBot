@@ -135,7 +135,8 @@ class OrderList(base):
             OrderList.dish_price,
         ).order_by(OrderList.user_name) \
             .filter(OrderList.date_create == datetime.date.today()) \
-            .filter(OrderList.is_active == True)
+            .filter(OrderList.is_active == True)\
+            .all()
         return query
 
     @staticmethod
@@ -174,6 +175,8 @@ class OrderList(base):
             session.add(order)
         session.commit()
 
+
+OrderList.get_orders()
 
 if __name__ == "__main__":
     base.metadata.create_all(engine)
