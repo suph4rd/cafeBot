@@ -22,6 +22,14 @@ async def main_menu_handler(message: types.Message, *args, **kwargs):
     if user_id == ADMIN_ID:
         await admin_handlers.admin_main_menu_handler(message)
     else:
+        is_order = OrderList.check_order_today(user_id)
+        if is_order:
+            await message.answer(text=hbold("Ваш заказ на сегодня:"))
+            order_today = OrderList.get_order_today(user_id)
+            for num, order in enumerate(order_today, start=1):
+                await message.answer(text=f"{num}. {order.dish_name}  {order.dish_price}р")
+        else:
+            await message.answer("Вы ещё ничего не заказали на сегодня!")
         await message.answer(
             text=hbold("ГЛАВНОЕ МЕНЮ"),
             reply_markup=menu_keyboard
@@ -59,22 +67,23 @@ async def order_user_handler(call: CallbackQuery, state: FSMContext, *args, **kw
     if data.get("data_set"):
         await call.message.edit_text(text=hbold("СПИСОК ЗАКАЗОВ"))
         data_set = data.get("data_set")
-        for val in data_set:
+        for num, val in enumerate(data_set, start=1):
             await call.message.answer(
-                text=val,
+                text=f"{num}. {val}",
                 reply_markup=get_inline_keyboard_markup(
                     text=f"Убрать {val}",
                     callback_data="remove_dish:{0}".format(val)
                 )
             )
-        await call.message.edit_reply_markup(
-                                  reply_markup=get_inline_keyboard_markup(
-                                      text="Подтвердить заказ",
-                                      callback_data="accept_order"
-                                  )
+        await call.message.answer(
+                              text=hbold("Подтверждение заказа"),
+                              reply_markup=get_inline_keyboard_markup(
+                                  text="Подтвердить заказ",
+                                  callback_data="accept_order"
+                              )
         )
         await call.message.answer(
-            text="Назад",
+            text=hbold("Назад"),
             reply_markup=get_inline_keyboard_markup(
                 text="Назад",
                 callback_data="to_menu"
@@ -139,7 +148,7 @@ async def dish_handler(call: CallbackQuery, *args, **kwargs):
             )
         )
     await call.message.answer(
-        text="Назад",
+        text=hbold("Назад"),
         reply_markup=get_inline_keyboard_markup(
             text="Назад",
             callback_data="to_menu"

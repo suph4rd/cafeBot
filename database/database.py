@@ -5,7 +5,6 @@ from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignK
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-
 # postgresql://example:example@localhost:5432/example
 from config import DB_USER, DB_PASSWORD, DB_DOMAIN, DB_PORT, DB_NAME
 
@@ -13,6 +12,7 @@ engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_DOMAIN}:{DB_PO
 base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
+
 
 class User(base):
     __tablename__ = 'User'
@@ -25,15 +25,15 @@ class User(base):
 
     @staticmethod
     def check_user_exists(user_id):
-        query = session.query(exists().where(User.user_id == user_id))\
-                                        .scalar()
+        query = session.query(exists().where(User.user_id == user_id)) \
+            .scalar()
         return query
 
     @staticmethod
     def check_user_is_active(user_id):
-        query = session.query(exists().where(User.user_id == user_id)\
-                                        .where(User.is_active == True))\
-                                        .scalar()
+        query = session.query(exists().where(User.user_id == user_id) \
+                              .where(User.is_active == True)) \
+            .scalar()
         return query
 
     @staticmethod
@@ -56,9 +56,9 @@ class User(base):
 
 
 template_category_m2m = Table('template_category_m2m',
-                            base.metadata,
-                            Column('template_id', Integer, ForeignKey("Template.id")),
-                            Column('category_id', Integer, ForeignKey("Category.id"))
+                              base.metadata,
+                              Column('template_id', Integer, ForeignKey("Template.id")),
+                              Column('category_id', Integer, ForeignKey("Category.id"))
                               )
 
 
@@ -70,10 +70,10 @@ class Template(base):
 
 
 dish_category_m2m = Table('dish_category_m2m',
-                            base.metadata,
-                            Column('dish_id', Integer, ForeignKey("Dish.id")),
-                            Column('category_id', Integer, ForeignKey("Category.id"))
-                              )
+                          base.metadata,
+                          Column('dish_id', Integer, ForeignKey("Dish.id")),
+                          Column('category_id', Integer, ForeignKey("Category.id"))
+                          )
 
 
 class Category(base):
@@ -109,9 +109,9 @@ class Dish(base):
     def get_dishes(category="первое"):
         query = session.query(Dish.dish_name, Dish.dish_description,
                               Dish.dish_price, Dish.dish_photo,
-                              Category.category_name)\
-            .join(Category, Dish.category)\
-            .filter(Category.category_name==category).all()
+                              Category.category_name) \
+            .join(Category, Dish.category) \
+            .filter(Category.category_name == category).all()
         return query
 
 
@@ -134,34 +134,42 @@ class OrderList(base):
             OrderList.dish_name,
             OrderList.dish_price,
         ).order_by(OrderList.user_name) \
-        .filter(OrderList.date_create == datetime.date.today())\
-        .filter(OrderList.is_active == True)
-        print(query)
+            .filter(OrderList.date_create == datetime.date.today()) \
+            .filter(OrderList.is_active == True)
+        return query
+
+    @staticmethod
+    def get_order_today(user_id):
+        query = session.query(OrderList.dish_name, OrderList.dish_price) \
+            .filter(OrderList.user_id == user_id) \
+            .filter(OrderList.date_create == datetime.date.today()) \
+            .all()
+        return query
 
     @staticmethod
     def check_order_today(user_id):
-        query = session.query(exists().where(OrderList.user_id == user_id)\
-            .where(OrderList.date_create == datetime.date.today()))\
+        query = session.query(exists().where(OrderList.user_id == user_id) \
+                              .where(OrderList.date_create == datetime.date.today())) \
             .scalar()
         return query
 
     @staticmethod
     def accept_order(data_set: set, user_id):
-        user = session.query(User.fio, User.phone_number)\
-            .filter(User.user_id == user_id)\
+        user = session.query(User.fio, User.phone_number) \
+            .filter(User.user_id == user_id) \
             .all()
         dishes_price = session.query(Dish.dish_name, Dish.dish_price) \
-                .filter(Dish.dish_name.in_(data_set))\
-                .all()
+            .filter(Dish.dish_name.in_(data_set)) \
+            .all()
         for query in dishes_price:
             order = OrderList(
                 user_name=user[0].fio,
                 user_phone_number=user[0].phone_number,
                 user_id=user_id,
                 dish_name=query.dish_name,
-                dish_price = query.dish_price,
-                date_create = datetime.date.today(),
-                is_active = True
+                dish_price=query.dish_price,
+                date_create=datetime.date.today(),
+                is_active=True
             )
             session.add(order)
         session.commit()

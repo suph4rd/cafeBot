@@ -61,8 +61,6 @@ def check_order_today(func):
         is_order = OrderList.check_order_today(user_id)
         if is_order:
             await message.answer("Извените, но вы уже сделали заказ на сегодня! Приходите завтра!")
-            # from handlers.user_handlers import main_menu_handler
-            # await main_menu_handler(message)
         else:
             await func(message, state) if state else await func(message)
     return wrapper

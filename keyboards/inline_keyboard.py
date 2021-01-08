@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from database.database import Category
 
+
 menu_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="Меню", callback_data="menu")],
@@ -8,7 +9,6 @@ menu_keyboard = InlineKeyboardMarkup(
                                   callback_data="change_user")]
         ]
     )
-
 
 
 def get_category_keyboard():
