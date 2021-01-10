@@ -82,6 +82,18 @@ class Template(base):
         return self.template_name
 
     @staticmethod
+    def get_templates():
+        query = session.query(Template.template_name).all()
+        return query
+
+    @staticmethod
+    def set_false():
+        session.query(Template).filter(Template.is_active == True)\
+                                        .update({"is_active": False})
+        session.commit()
+        # session.query(User).filter(User.user_id == user_id).update(user_dict)
+
+    @staticmethod
     def get_menu_status():
         today = datetime.date.today()
         query = session.query(Template.is_active)\

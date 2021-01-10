@@ -75,6 +75,13 @@ async def admin_change_user_handler(call: types.CallbackQuery, *args, **kwargs):
     await get_back(call, callback_data="to_admin_main_menu")
 
 
+@dp.callback_query_handler(text="menu_today_false")
+async def menu_today_false_handler(call: types.CallbackQuery, *args, **kwargs):
+    Template.set_false()
+    await call.answer("Меню не активно!")
+    await admin_menu_status_handler(call)
+
+
 @dp.callback_query_handler(text="admin_menu_status")
 async def admin_menu_status_handler(call: types.CallbackQuery, *args, **kwargs):
     menu_status = Template.get_menu_status()

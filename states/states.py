@@ -9,3 +9,7 @@ class Registration(StatesGroup):
 
 class OrderUser(StatesGroup):
     start_order = State()
+
+
+class ChangeTemplate(StatesGroup):
+    start = State()
