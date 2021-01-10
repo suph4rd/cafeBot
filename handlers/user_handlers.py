@@ -31,8 +31,10 @@ async def menu_handler(call: CallbackQuery, *args, **kwargs):
         await call.answer("Извените, но вы уже сделали заказ на сегодня! Приходите завтра!")
         await main_menu_handler(call.message)
     else:
-        await call.message.edit_text(text=hbold("ВЫБЕРИТЕ КАТЕГОРИЮ"))
-        await call.message.edit_reply_markup(reply_markup=get_category_keyboard())
+        await call.message.edit_text(
+            text=hbold("ВЫБЕРИТЕ КАТЕГОРИЮ"),
+            reply_markup=get_category_keyboard()
+        )
 
 
 @dp.callback_query_handler(text=["order_user"], state=OrderUser.start_order)
@@ -156,5 +158,5 @@ async def main_menu_handler(message: types.Message, *args, **kwargs):
 @dp.callback_query_handler(text="to_main_menu", state=OrderUser.start_order)
 async def menu_handler_back(call: CallbackQuery, *args, **kwargs):
     '''Back to the main menu'''
-    await call.message.edit_reply_markup()
+    await call.message.delete()
     await main_menu_handler(call.message)

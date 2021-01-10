@@ -4,7 +4,7 @@ from handlers.decorators import check_admin, check_authorization
 from aiogram import types
 from initialise import dp
 from keyboards.inline_keyboard import admin_main_menu_keyboards, get_inline_keyboard_markup, get_back, \
-    get_admin_change_user_handler
+    get_admin_change_user_handler, keyboard_admin_menu_status
 
 
 @dp.callback_query_handler(text_startswith="admin_order_list")
@@ -75,6 +75,15 @@ async def admin_change_user_handler(call: types.CallbackQuery, *args, **kwargs):
     await get_back(call, callback_data="to_admin_main_menu")
 
 
+@dp.callback_query_handler(text="admin_menu_status")
+async def admin_menu_status_handler(call: types.CallbackQuery, *args, **kwargs):
+    # запрос на статус меню
+    await call.message.edit_text(
+        text=hbold("Меню не выставлено!"),
+        reply_markup=keyboard_admin_menu_status
+    )
+
+
 @dp.message_handler()
 @check_authorization
 @check_admin
@@ -87,7 +96,10 @@ async def admin_main_menu_handler(message: types.Message, *args, **kwargs):
 
 @dp.callback_query_handler(text="to_admin_main_menu")
 async def admin_main_menu_handler_back(call: types.CallbackQuery, *args, **kwargs):
+    print("Забегал на огонёк")
+    await call.message.delete()
     await admin_main_menu_handler(call.message)
+
 
 # @dp.message_handler(content_types=['photo'])
 # @check_autorization
