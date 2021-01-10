@@ -1,6 +1,6 @@
 import datetime
 from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignKey, \
-    DateTime, Boolean, Table, exists, Date
+    DateTime, Boolean, exists, Date
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -70,13 +70,6 @@ class User(base):
         return True
 
 
-# template_category_m2m = Table('template_category_m2m',
-#                               base.metadata,
-#                               Column('template_id', Integer, ForeignKey("Template.id")),
-#                               Column('category_id', Integer, ForeignKey("Category.id"))
-#                               )
-
-
 class Template(base):
     __tablename__ = 'Template'
     id = Column(Integer, primary_key=True)
@@ -88,12 +81,19 @@ class Template(base):
     def __repr__(self):
         return self.template_name
 
-
-# dish_category_m2m = Table('dish_category_m2m',
-#                           base.metadata,
-#                           Column('dish_id', Integer, ForeignKey("Dish.id")),
-#                           Column('category_id', Integer, ForeignKey("Category.id"))
-#                           )
+    @staticmethod
+    def get_menu_status():
+        today = datetime.date.today()
+        query = session.query(Template.is_active)\
+                .filter(Template.date_update == today)\
+                .all()
+        for template in query:
+            if template.is_active:
+                return "Меню активно"
+        for template in query:
+            if template.is_active is False:
+                return "Меню не активно"
+        return "Меню не выставлено"
 
 
 class Category(base):
@@ -166,7 +166,7 @@ class OrderList(base):
     def drop_order(user_id, dish_name):
         session.query(OrderList).filter(OrderList.user_id == user_id)\
                                 .filter(OrderList.dish_name == dish_name)\
-                                .update({"is_active":False})
+                                .update({"is_active": False})
         session.commit()
 
     @staticmethod
@@ -206,7 +206,7 @@ class OrderList(base):
         session.commit()
 
 
-Dish.get_dishes("первое")
+Template.get_menu_status()
 
 if __name__ == "__main__":
     base.metadata.create_all(engine)

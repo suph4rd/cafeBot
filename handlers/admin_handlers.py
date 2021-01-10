@@ -1,10 +1,10 @@
 from aiogram.utils.markdown import hbold
-from database.database import OrderList, User
+from database.database import OrderList, User, Template
 from handlers.decorators import check_admin, check_authorization
 from aiogram import types
 from initialise import dp
 from keyboards.inline_keyboard import admin_main_menu_keyboards, get_inline_keyboard_markup, get_back, \
-    get_admin_change_user_handler, keyboard_admin_menu_status
+    get_admin_change_user_handler, get_keyboard_admin_menu_status
 
 
 @dp.callback_query_handler(text_startswith="admin_order_list")
@@ -77,10 +77,10 @@ async def admin_change_user_handler(call: types.CallbackQuery, *args, **kwargs):
 
 @dp.callback_query_handler(text="admin_menu_status")
 async def admin_menu_status_handler(call: types.CallbackQuery, *args, **kwargs):
-    # запрос на статус меню
+    menu_status = Template.get_menu_status()
     await call.message.edit_text(
-        text=hbold("Меню не выставлено!"),
-        reply_markup=keyboard_admin_menu_status
+        text=f"Статус меню: {hbold(menu_status)}",
+        reply_markup=get_keyboard_admin_menu_status(menu_status)
     )
 
 
