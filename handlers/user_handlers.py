@@ -9,39 +9,15 @@ from handlers import admin_handlers, autorization
 from handlers.decorators import check_authorization, check_order_today, get_user_id
 from initialise import dp
 from keyboards.inline_keyboard import menu_keyboard, get_inline_keyboard_markup, \
-    get_category_keyboard
+    get_category_keyboard, get_back
 from states.states import Registration, OrderUser
-
-
-@dp.message_handler(state=[OrderUser.start_order, None])
-@check_authorization
-async def main_menu_handler(message: types.Message, *args, **kwargs):
-    '''User main menu'''
-    message = message.message if isinstance(message, aiogram.types.callback_query.CallbackQuery) else message
-    user_id = get_user_id(message)
-    if user_id == ADMIN_ID:
-        await admin_handlers.admin_main_menu_handler(message)
-    else:
-        is_order = OrderList.check_order_today(user_id)
-        if is_order:
-            await message.answer(text=hbold("Ваш заказ на сегодня:"))
-            order_today = OrderList.get_order_today(user_id)
-            for num, order in enumerate(order_today, start=1):
-                await message.answer(text=f"{num}. {order.dish_name}  {order.dish_price}р")
-        else:
-            await message.answer("Вы ещё ничего не заказали на сегодня!")
-        await message.answer(
-            text=hbold("ГЛАВНОЕ МЕНЮ"),
-            reply_markup=menu_keyboard
-        )
-        await OrderUser.start_order.set()
 
 
 @dp.callback_query_handler(text=["change_user"], state=[OrderUser.start_order, None])
 async def change_user_handler(call: CallbackQuery, state: FSMContext, *args, **kwargs):
     '''Go change information about user'''
     await state.finish()
-    await Registration.not_regtration.set()
+    await Registration.not_registration.set()
     await autorization.registration_not_registration_handler(call.message)
 
 
@@ -82,13 +58,7 @@ async def order_user_handler(call: CallbackQuery, state: FSMContext, *args, **kw
                                   callback_data="accept_order"
                               )
         )
-        await call.message.answer(
-            text=hbold("Назад"),
-            reply_markup=get_inline_keyboard_markup(
-                text="Назад",
-                callback_data="to_menu"
-            )
-        )
+        await get_back(call=call, callback_data="to_menu")
     else:
         await call.answer("Список заказов пуст!")
 
@@ -120,13 +90,6 @@ async def remove_dish_handler(call: CallbackQuery, state: FSMContext, *args, **k
     await call.answer("Список блюд обновлён")
 
 
-@dp.callback_query_handler(text="to_main_menu", state=OrderUser.start_order)
-async def menu_handler_back(call: CallbackQuery, *args, **kwargs):
-    '''Back to the main menu'''
-    await call.message.edit_reply_markup()
-    await main_menu_handler(call.message)
-
-
 @dp.callback_query_handler(text_startswith="dish", state=OrderUser.start_order)
 @check_order_today
 async def dish_handler(call: CallbackQuery, *args, **kwargs):
@@ -147,13 +110,7 @@ async def dish_handler(call: CallbackQuery, *args, **kwargs):
                 callback_data="add_dish:{0}".format(val.dish_name)
             )
         )
-    await call.message.answer(
-        text=hbold("Назад"),
-        reply_markup=get_inline_keyboard_markup(
-            text="Назад",
-            callback_data="to_menu"
-        )
-    )
+    await get_back(call=call, callback_data="to_menu")
 
 
 @dp.callback_query_handler(text_startswith="add_dish", state=OrderUser.start_order)
@@ -170,3 +127,34 @@ async def add_dish_handler(call: CallbackQuery, state: FSMContext, *args, **kwar
         data_set.add(dish)
     await state.update_data(data_set=data_set)
     await call.answer(text="Блюдо {0} добавлено!".format(dish))
+
+
+@dp.message_handler(state=[OrderUser.start_order, None])
+@check_authorization
+async def main_menu_handler(message: types.Message, *args, **kwargs):
+    '''User main menu'''
+    message = message.message if isinstance(message, aiogram.types.callback_query.CallbackQuery) else message
+    user_id = get_user_id(message)
+    if user_id == ADMIN_ID:
+        await admin_handlers.admin_main_menu_handler(message)
+    else:
+        is_order = OrderList.check_order_today(user_id)
+        if is_order:
+            await message.answer(text=hbold("Ваш заказ на сегодня:"))
+            order_today = OrderList.get_order_today(user_id)
+            for num, order in enumerate(order_today, start=1):
+                await message.answer(text=f"{num}. {order.dish_name}  {order.dish_price}р")
+        else:
+            await message.answer("Вы ещё ничего не заказали на сегодня!")
+        await message.answer(
+            text=hbold("ГЛАВНОЕ МЕНЮ"),
+            reply_markup=menu_keyboard
+        )
+        await OrderUser.start_order.set()
+
+
+@dp.callback_query_handler(text="to_main_menu", state=OrderUser.start_order)
+async def menu_handler_back(call: CallbackQuery, *args, **kwargs):
+    '''Back to the main menu'''
+    await call.message.edit_reply_markup()
+    await main_menu_handler(call.message)

@@ -1,14 +1,16 @@
+from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from database.database import Category
+from aiogram.utils.markdown import hbold
 
+from database.database import Category, User
 
 menu_keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Меню", callback_data="menu")],
-            [InlineKeyboardButton(text="Изменить данные пользователя",
-                                  callback_data="change_user")]
-        ]
-    )
+    inline_keyboard=[
+        [InlineKeyboardButton(text="Меню", callback_data="menu")],
+        [InlineKeyboardButton(text="Изменить данные пользователя",
+                              callback_data="change_user")]
+    ]
+)
 
 
 def get_category_keyboard():
@@ -20,7 +22,7 @@ def get_category_keyboard():
         text=x.category_name,
         callback_data=f"dish:{x.category_name}"
     )]
-    for x in Category.get_catygoryes()]
+        for x in Category.get_catygoryes()]
 
     button_list += button_list_pref
     button_list.append([InlineKeyboardButton(text="Назад", callback_data="to_main_menu")])
@@ -32,12 +34,12 @@ def get_category_keyboard():
 
 
 admin_main_menu_keyboards = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Меню на сегодня", callback_data="admin_menu")],
-            [InlineKeyboardButton(text="Список заказов", callback_data="admin_order_list")],
-            [InlineKeyboardButton(text="Работа с пользователями", callback_data="admin_change_user")]
-        ]
-    )
+    inline_keyboard=[
+        [InlineKeyboardButton(text="Меню на сегодня", callback_data="admin_menu")],
+        [InlineKeyboardButton(text="Список заказов", callback_data="admin_order_list")],
+        [InlineKeyboardButton(text="Работа с пользователями", callback_data="admin_change_user")]
+    ]
+)
 
 
 def get_inline_keyboard_markup(text, callback_data):
@@ -50,4 +52,30 @@ def get_inline_keyboard_markup(text, callback_data):
         text=text,
         callback_data=callback_data
     )]])
+    return keyboard
+
+
+async def get_back(call: types.CallbackQuery, callback_data):
+    await call.message.answer(
+        text=hbold("Назад"),
+        reply_markup=get_inline_keyboard_markup(
+            text="Назад",
+            callback_data=callback_data
+        )
+    )
+
+
+def get_admin_change_user_handler(user_id, status=None):
+    if not isinstance(status, bool):
+        status = User.check_user_is_active(user_id)
+    status_name = "неактивным" if status else "активным"
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Редактировать", callback_data=f"admin_change_user_edit:{user_id}")],
+            [InlineKeyboardButton(
+                text=f"Сделать {status_name}",
+                callback_data=f"admin_change_user_is_active:{user_id}:{status}"
+            )],
+        ]
+    )
     return keyboard
