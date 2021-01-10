@@ -70,13 +70,6 @@ class User(base):
         return True
 
 
-# template_category_m2m = Table('template_category_m2m',
-#                               base.metadata,
-#                               Column('template_id', Integer, ForeignKey("Template.id")),
-#                               Column('category_id', Integer, ForeignKey("Category.id"))
-#                               )
-
-
 class Template(base):
     __tablename__ = 'Template'
     id = Column(Integer, primary_key=True)
@@ -87,13 +80,6 @@ class Template(base):
 
     def __repr__(self):
         return self.template_name
-
-
-# dish_category_m2m = Table('dish_category_m2m',
-#                           base.metadata,
-#                           Column('dish_id', Integer, ForeignKey("Dish.id")),
-#                           Column('category_id', Integer, ForeignKey("Category.id"))
-#                           )
 
 
 class Category(base):
@@ -205,8 +191,6 @@ class OrderList(base):
             session.add(order)
         session.commit()
 
-
-Dish.get_dishes("первое")
 
 if __name__ == "__main__":
     base.metadata.create_all(engine)
