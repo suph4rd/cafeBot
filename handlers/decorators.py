@@ -26,7 +26,7 @@ def check_authorization(func):
         exists = User.check_user_exists(user_id)
         is_active = User.check_user_is_active(user_id)
         if not exists:
-            await Registration.not_regtration.set()
+            await Registration.not_registration.set()
             from handlers.autorization import registration_not_registration_handler
             await registration_not_registration_handler(message)
         elif is_active:

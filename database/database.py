@@ -1,7 +1,6 @@
 import datetime
-
-from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignKey, DateTime, Boolean, Table, exists, \
-    Date
+from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignKey, \
+    DateTime, Boolean, Table, exists, Date
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -30,6 +29,18 @@ class User(base):
         return query
 
     @staticmethod
+    def get_users():
+        query = session.query(User.user_id, User.fio, User.phone_number, User.is_active).all()
+        return query
+
+    @staticmethod
+    def get_user(user_id):
+        query = session.query(User.fio, User.phone_number)\
+            .filter(User.user_id == user_id)\
+            .all()[0]
+        return query
+
+    @staticmethod
     def check_user_is_active(user_id):
         query = session.query(exists().where(User.user_id == user_id) \
                               .where(User.is_active == True)) \
@@ -53,6 +64,7 @@ class User(base):
         user_id = user_dict.get("user_id")
         session.query(User).filter(User.user_id == user_id).update(user_dict)
         session.commit()
+        return True
 
 
 template_category_m2m = Table('template_category_m2m',
@@ -129,14 +141,23 @@ class OrderList(base):
     @staticmethod
     def get_orders():
         query = session.query(
+            OrderList.user_id,
             OrderList.user_name,
             OrderList.user_phone_number,
             OrderList.dish_name,
             OrderList.dish_price,
         ).order_by(OrderList.user_name) \
             .filter(OrderList.date_create == datetime.date.today()) \
-            .filter(OrderList.is_active == True)
+            .filter(OrderList.is_active == True)\
+            .all()
         return query
+
+    @staticmethod
+    def drop_order(user_id, dish_name):
+        session.query(OrderList).filter(OrderList.user_id == user_id)\
+                                .filter(OrderList.dish_name == dish_name)\
+                                .update({"is_active":False})
+        session.commit()
 
     @staticmethod
     def get_order_today(user_id):
