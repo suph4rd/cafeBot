@@ -35,7 +35,7 @@ def get_category_keyboard():
 
 admin_main_menu_keyboards = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Меню на сегодня", callback_data="admin_menu")],
+        [InlineKeyboardButton(text="Меню на сегодня", callback_data="admin_menu_status")],
         [InlineKeyboardButton(text="Список заказов", callback_data="admin_order_list")],
         [InlineKeyboardButton(text="Работа с пользователями", callback_data="admin_change_user")]
     ]
@@ -79,3 +79,13 @@ def get_admin_change_user_handler(user_id, status=None):
         ]
     )
     return keyboard
+
+
+keyboard_admin_menu_status = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="Выбор меню на сегодня", callback_data="select_menu_today")],
+        [InlineKeyboardButton(text="Сделать меню неактивным", callback_data="menu_today_false")],
+        [InlineKeyboardButton(text="Работа с шаблонами", callback_data="template_change")],
+        [InlineKeyboardButton(text="Назад", callback_data="to_admin_main_menu")]
+    ]
+)
