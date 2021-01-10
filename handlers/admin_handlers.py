@@ -96,7 +96,6 @@ async def admin_main_menu_handler(message: types.Message, *args, **kwargs):
 
 @dp.callback_query_handler(text="to_admin_main_menu")
 async def admin_main_menu_handler_back(call: types.CallbackQuery, *args, **kwargs):
-    print("Забегал на огонёк")
     await call.message.delete()
     await admin_main_menu_handler(call.message)
 

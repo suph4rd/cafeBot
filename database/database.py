@@ -22,6 +22,9 @@ class User(base):
     is_active = Column(Boolean)
     phone_number = Column(String)
 
+    def __repr__(self):
+        return f"{self.user_id} {self.fio}"
+
     @staticmethod
     def check_user_exists(user_id):
         query = session.query(exists().where(User.user_id == user_id)) \
@@ -67,11 +70,11 @@ class User(base):
         return True
 
 
-template_category_m2m = Table('template_category_m2m',
-                              base.metadata,
-                              Column('template_id', Integer, ForeignKey("Template.id")),
-                              Column('category_id', Integer, ForeignKey("Category.id"))
-                              )
+# template_category_m2m = Table('template_category_m2m',
+#                               base.metadata,
+#                               Column('template_id', Integer, ForeignKey("Template.id")),
+#                               Column('category_id', Integer, ForeignKey("Category.id"))
+#                               )
 
 
 class Template(base):
@@ -79,24 +82,29 @@ class Template(base):
     id = Column(Integer, primary_key=True)
     template_name = Column(String)
     is_active = Column(Boolean)
+    date_update = Column(Date, default=datetime.date.today())
+    category = relationship("Category", cascade="delete")
+
+    def __repr__(self):
+        return self.template_name
 
 
-dish_category_m2m = Table('dish_category_m2m',
-                          base.metadata,
-                          Column('dish_id', Integer, ForeignKey("Dish.id")),
-                          Column('category_id', Integer, ForeignKey("Category.id"))
-                          )
+# dish_category_m2m = Table('dish_category_m2m',
+#                           base.metadata,
+#                           Column('dish_id', Integer, ForeignKey("Dish.id")),
+#                           Column('category_id', Integer, ForeignKey("Category.id"))
+#                           )
 
 
 class Category(base):
     __tablename__ = 'Category'
     id = Column(Integer, primary_key=True)
     category_name = Column(String)
-    template = relationship(
-        "Template",
-        secondary=template_category_m2m,
-        backref="parents"
-    )
+    template = Column('template', Integer, ForeignKey("Template.id"))
+    dish = relationship("Dish", cascade="delete")
+
+    def __repr__(self):
+        return f"{self.id} {self.category_name} {self.dish}"
 
     @staticmethod
     def get_catygoryes():
@@ -111,19 +119,18 @@ class Dish(base):
     dish_description = Column(String)
     dish_price = Column(DECIMAL)
     dish_photo = Column(String)
-    category = relationship(
-        "Category",
-        secondary=dish_category_m2m,
-        backref="parents"
-    )
+    category = Column(Integer, ForeignKey("Category.id"))
+
+    def __repr__(self):
+        return f"{self.dish_name} {self.category}"
 
     @staticmethod
-    def get_dishes(category="первое"):
+    def get_dishes(category):
         query = session.query(Dish.dish_name, Dish.dish_description,
-                              Dish.dish_price, Dish.dish_photo,
-                              Category.category_name) \
-            .join(Category, Dish.category) \
-            .filter(Category.category_name == category).all()
+                              Dish.dish_price, Dish.dish_photo, Category.category_name) \
+                            .join(Category) \
+                            .filter(Category.category_name == category)\
+                            .all()
         return query
 
 
@@ -137,6 +144,9 @@ class OrderList(base):
     dish_price = Column(DECIMAL)
     date_create = Column(Date)
     is_active = Column(Boolean)
+
+    def __repr__(self):
+        return f"{self.user_id} {self.user_name} {self.dish_name} {self.date_create}"
 
     @staticmethod
     def get_orders():
@@ -195,6 +205,8 @@ class OrderList(base):
             session.add(order)
         session.commit()
 
+
+Dish.get_dishes("первое")
 
 if __name__ == "__main__":
     base.metadata.create_all(engine)
