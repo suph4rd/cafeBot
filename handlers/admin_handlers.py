@@ -13,10 +13,10 @@ async def admin_order_list(call: types.CallbackQuery, *args, **kwargs):
     if orders:
         await call.message.answer(text=hbold("ЗАКАЗЫ НА СЕГОДНЯ:"))
         for order in orders:
-            await call.message.answer(text=f"Пользователь: {hbold(order.user_name)}")
-            await call.message.answer(text=f"Телефон: {order.user_phone_number}")
             await call.message.answer(
-                text=f"Блюдо: {order.dish_name} {order.dish_price}р",
+                text=f"Пользователь: {hbold(order.user_name)}\n"
+                     f"Телефон: {order.user_phone_number}\n"
+                     f"Блюдо: {order.dish_name} {order.dish_price}р",
                 reply_markup=get_inline_keyboard_markup(
                     text="Убрать заказ",
                     callback_data=f"drop_order:{order.user_id}:{order.dish_name}"
@@ -40,7 +40,6 @@ async def admin_change_user_edit_handler(call: types.CallbackQuery, *args, **kwa
     from states.states import Registration
     await Registration.not_registration.set()
     from handlers import autorization
-    print(f"call.data:{call.data}")
     user_id = call.data.split(":")[1]
     await autorization.registration_not_registration_handler(call.message, user_id=user_id)
 
@@ -67,11 +66,10 @@ async def admin_change_user_handler(call: types.CallbackQuery, *args, **kwargs):
     users = User.get_users()
     await call.message.answer(text=hbold("СПИСОК ПОЛЛЬЗОВАТЕЛЕЙ:"))
     for num, user in enumerate(users, start=1):
-        print(user.user_id)
-        await call.message.answer(text=f"{num}.Пользователь: {hbold(user.fio)}")
-        await call.message.answer(text=f"Телефон: {user.phone_number}")
         await call.message.answer(
-            text=f"ID: {user.user_id}",
+            text=f"{num}.Пользователь: {hbold(user.fio)}\n"
+                 f"Телефон: {user.phone_number}\n"
+                 f"ID: {user.user_id}",
             reply_markup=get_admin_change_user_handler(user.user_id)
         )
     await get_back(call, callback_data="to_admin_main_menu")

@@ -101,10 +101,10 @@ async def dish_handler(call: CallbackQuery, *args, **kwargs):
         if val.dish_photo:
             with open(f"./photo/{val.dish_photo}", "rb") as photo:
                 await call.message.answer_photo(photo=photo)
-        await call.message.answer(text=f"Название: {val.dish_name}")
-        await call.message.answer(text=f"Цена: {val.dish_price}р")
         await call.message.answer(
-            text=f"Описание: {val.dish_description}",
+            text=f"Название: {val.dish_name}\n"
+                 f"Цена: {val.dish_price}р\n"
+                 f"Описание: {val.dish_description}",
             reply_markup=get_inline_keyboard_markup(
                 text=f"Заказать {val.dish_name}",
                 callback_data="add_dish:{0}".format(val.dish_name)
