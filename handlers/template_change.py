@@ -60,6 +60,27 @@ async def admin_menu_template_delete_handler(call: types.CallbackQuery, state: F
     await select_menu_today_handler(call)
 
 
+@dp.callback_query_handler(text="add_new_template")
+async def add_new_template_handler(call: types.CallbackQuery, *args, **kwargs):
+    await ChangeTemplate.add_template.set()
+    await call.message.edit_text(hbold("Введите название шаблона!"))
+
+
+@dp.message_handler(state=ChangeTemplate.add_template)
+async def add_new_template_handler(message: types.Message, state: FSMContext, *args, **kwargs):
+    template_name = message.text
+    print(template_name)
+    Template.create_template(template_name)
+    template_id = Template.get_template_id(template_name)
+    await state.set_data({
+        "template_name": template_name,
+        "template_id": template_id
+    })
+    await ChangeTemplate.start.set()
+    await admin_menu_template_change_handler(message, state)
+    # Редирект на редактирование шаблона со сменой состояния
+
+
 @dp.message_handler(state=[ChangeTemplate])
 @dp.callback_query_handler(text="admin_menu_template_change", state=[ChangeTemplate])
 async def admin_menu_template_change_handler(message: types.Message, state: FSMContext, *args, **kwargs):

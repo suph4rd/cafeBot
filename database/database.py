@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignKey, \
     DateTime, Boolean, exists, Date
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
 # postgresql://example:example@localhost:5432/example
@@ -76,10 +76,16 @@ class Template(base):
     template_name = Column(String)
     is_active = Column(Boolean)
     date_update = Column(Date, default=datetime.date.today())
-    category = relationship("Category", cascade="delete")
+    category = relationship("Category", backref="parent", passive_deletes=True, passive_updates=True)
 
     def __repr__(self):
         return self.template_name
+
+    @staticmethod
+    def create_template(template_name):
+        template = Template(template_name=template_name)
+        session.add(template)
+        session.commit()
 
     @staticmethod
     def drop_template(template_id):
@@ -124,8 +130,8 @@ class Category(base):
     __tablename__ = 'Category'
     id = Column(Integer, primary_key=True)
     category_name = Column(String)
-    template = Column('template', Integer, ForeignKey("Template.id"))
-    dish = relationship("Dish", cascade="delete")
+    template = Column(Integer, ForeignKey("Template.id", ondelete='CASCADE', onupdate='CASCADE'))
+    dish = relationship("Dish", backref="parent", passive_deletes=True, passive_updates=True)
 
     def __repr__(self):
         return f"{self.id} {self.category_name} {self.dish}"
@@ -140,6 +146,7 @@ class Category(base):
     def get_catygoryes(template=session.query(Template.id).filter(Template.is_active == True)\
                        .filter(Template.date_update == datetime.date.today())
                        .all()[0].id):
+        """Need comment this method, when you create database!!!!!!!!!"""
         if template:
             query = session.query(Category).filter(Category.template == template).all()
             return query
@@ -152,7 +159,7 @@ class Dish(base):
     dish_description = Column(String)
     dish_price = Column(DECIMAL)
     dish_photo = Column(String)
-    category = Column(Integer, ForeignKey("Category.id"))
+    category = Column(Integer, ForeignKey("Category.id", ondelete='CASCADE', onupdate='CASCADE'))
 
     def __repr__(self):
         return f"{self.dish_name} {self.category}"
