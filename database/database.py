@@ -82,16 +82,23 @@ class Template(base):
         return self.template_name
 
     @staticmethod
+    def get_template_id(template_name):
+        query = session.query(Template.id)\
+            .filter(Template.template_name == template_name)\
+            .all()[0].id
+        return query
+
+    @staticmethod
     def get_templates():
         query = session.query(Template.template_name).all()
         return query
 
     @staticmethod
     def set_false():
-        session.query(Template).filter(Template.is_active == True)\
-                                        .update({"is_active": False})
+        session.query(Template).filter(Template.is_active == True) \
+            .filter(Template.date_update == datetime.date.today())\
+            .update({"is_active": False})
         session.commit()
-        # session.query(User).filter(User.user_id == user_id).update(user_dict)
 
     @staticmethod
     def get_menu_status():
@@ -119,9 +126,18 @@ class Category(base):
         return f"{self.id} {self.category_name} {self.dish}"
 
     @staticmethod
-    def get_catygoryes():
-        query = session.query(Category).all()
-        return query
+    def add_category(category_name, template_id):
+        category = Category(category_name=category_name, template=template_id)
+        session.add(category)
+        session.commit()
+
+    @staticmethod
+    def get_catygoryes(template=session.query(Template.id).filter(Template.is_active == True)\
+                       .filter(Template.date_update == datetime.date.today())
+                       .all()[0].id):
+        if template:
+            query = session.query(Category).filter(Category.template == template).all()
+            return query
 
 
 class Dish(base):
@@ -217,8 +233,6 @@ class OrderList(base):
             session.add(order)
         session.commit()
 
-
-Template.get_menu_status()
 
 if __name__ == "__main__":
     base.metadata.create_all(engine)

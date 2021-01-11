@@ -13,3 +13,4 @@ class OrderUser(StatesGroup):
 
 class ChangeTemplate(StatesGroup):
     start = State()
+    add_category = State()
