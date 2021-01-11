@@ -82,6 +82,11 @@ class Template(base):
         return self.template_name
 
     @staticmethod
+    def drop_template(template_id):
+        session.query(Template).filter(Template.id == template_id).delete()
+        session.commit()
+
+    @staticmethod
     def get_template_id(template_name):
         query = session.query(Template.id)\
             .filter(Template.template_name == template_name)\

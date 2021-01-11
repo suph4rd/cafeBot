@@ -49,6 +49,17 @@ async def template_edit_add_category_handler(message: types.Message, state: FSMC
     await admin_menu_template_change_handler(message, state)
 
 
+@dp.callback_query_handler(text="admin_menu_template_delete", state=[ChangeTemplate])
+async def admin_menu_template_delete_handler(call: types.CallbackQuery, state: FSMContext, *args, **kwargs):
+    template_id = (await state.get_data("template_id")).get("template_id")
+    template_name = (await state.get_data("template_name")).get("template_name")
+    Template.drop_template(template_id)
+    if state:
+        await state.finish()
+    await call.answer(text=f"Шаблон {template_name} удалён!")
+    await select_menu_today_handler(call)
+
+
 @dp.message_handler(state=[ChangeTemplate])
 @dp.callback_query_handler(text="admin_menu_template_change", state=[ChangeTemplate])
 async def admin_menu_template_change_handler(message: types.Message, state: FSMContext, *args, **kwargs):
