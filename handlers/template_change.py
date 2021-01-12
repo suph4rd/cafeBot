@@ -1,11 +1,10 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hbold
-
 from database.database import Template, Category
-from initialise import dp, bot
+from initialise import dp
 from keyboards.inline_keyboard_template import get_template_keyboard, template_change_keyboard, \
-    get_template_category_keyboard
+    get_template_category_keyboard, get_template_category_dishes_keyboard
 from states.states import ChangeTemplate
 
 
@@ -69,7 +68,6 @@ async def add_new_template_handler(call: types.CallbackQuery, *args, **kwargs):
 @dp.message_handler(state=ChangeTemplate.add_template)
 async def add_new_template_handler(message: types.Message, state: FSMContext, *args, **kwargs):
     template_name = message.text
-    print(template_name)
     Template.create_template(template_name)
     template_id = Template.get_template_id(template_name)
     await state.set_data({
@@ -78,12 +76,11 @@ async def add_new_template_handler(message: types.Message, state: FSMContext, *a
     })
     await ChangeTemplate.start.set()
     await admin_menu_template_change_handler(message, state)
-    # Редирект на редактирование шаблона со сменой состояния
 
 
 @dp.message_handler(state=[ChangeTemplate])
 @dp.callback_query_handler(text="admin_menu_template_change", state=[ChangeTemplate])
-async def admin_menu_template_change_handler(message: types.Message, state: FSMContext, *args, **kwargs):
+async def admin_menu_template_change_handler(message, state: FSMContext, *args, **kwargs):
     template_name = (await state.get_data("template_name")).get("template_name")
     template_id = (await state.get_data("template_id")).get("template_id")
     if isinstance(message, types.CallbackQuery):
@@ -106,14 +103,21 @@ async def template_edit_add_category_handler(call: types.CallbackQuery, state: F
     )
 
 
-
-
-
-
-
-
-
-
-
-
-# add_new_template
+@dp.message_handler(state=[ChangeTemplate])
+@dp.callback_query_handler(text_startswith="template_edit_category", state=[ChangeTemplate])
+async def template_edit_category_handler(message: types.Message, state: FSMContext, *args, **kwargs):
+    await ChangeTemplate.category_edit.set()
+    if isinstance(message, types.CallbackQuery):
+        category_name = message.data.split(":")[1]
+        category_id = message.data.split(":")[2]
+        await message.message.edit_text(
+            text=hbold(f"Редактирование категории {category_name}"),
+            reply_markup=get_template_category_dishes_keyboard(category_name, category_id)
+        )
+    else:
+        category_name = (await state.get_data("category_name")).get("category_id")
+        category_id = (await state.get_data("category_id")).get("category_id")
+        await message.answer(
+            text=hbold(f"Редактирование категории {category_name}"),
+            reply_markup=get_template_category_dishes_keyboard(category_name, category_id)
+        )

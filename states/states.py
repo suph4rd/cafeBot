@@ -15,3 +15,4 @@ class ChangeTemplate(StatesGroup):
     start = State()
     add_category = State()
     add_template = State()
+    category_edit = State()

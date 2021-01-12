@@ -143,10 +143,12 @@ class Category(base):
         session.commit()
 
     @staticmethod
-    def get_catygoryes(template=session.query(Template.id).filter(Template.is_active == True)\
-                       .filter(Template.date_update == datetime.date.today())
-                       .all()[0].id):
+    def get_catygoryes(template=None):
         """Need comment this method, when you create database!!!!!!!!!"""
+        if not template:
+            template = session.query(Template.id).filter(Template.is_active == True) \
+                .filter(Template.date_update == datetime.date.today())\
+                .all()[0].id
         if template:
             query = session.query(Category).filter(Category.template == template).all()
             return query
@@ -166,11 +168,16 @@ class Dish(base):
 
     @staticmethod
     def get_dishes(category):
-        query = session.query(Dish.dish_name, Dish.dish_description,
+        query = session.query(Dish.dish_name, Dish.dish_name, Dish.dish_description,
                               Dish.dish_price, Dish.dish_photo, Category.category_name) \
                             .join(Category) \
                             .filter(Category.category_name == category)\
                             .all()
+        return query
+
+    @staticmethod
+    def get_dishes_category(category=None):
+        query = session.query(Dish).filter(Dish.category == category).all()
         return query
 
 
