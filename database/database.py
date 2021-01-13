@@ -101,7 +101,7 @@ class Template(base):
 
     @staticmethod
     def get_templates():
-        query = session.query(Template.template_name).all()
+        query = session.query(Template.template_name, Template.id).all()
         return query
 
     @staticmethod
@@ -153,6 +153,11 @@ class Category(base):
             query = session.query(Category).filter(Category.template == template).all()
             return query
 
+    @staticmethod
+    def drop_category(category_id):
+        session.query(Category).filter(Category.id == category_id).delete()
+        session.commit()
+
 
 class Dish(base):
     __tablename__ = 'Dish'
@@ -165,6 +170,28 @@ class Dish(base):
 
     def __repr__(self):
         return f"{self.dish_name} {self.category}"
+
+    @staticmethod
+    def add_or_update_dish(data):
+        is_exists = session.query(exists().where(Dish.id == data.get("dish_id"))) if data.get("dish_id") else None
+        if is_exists:
+            session.query(OrderList).filter(Dish.id == data.get("dish_id")) \
+                .update({
+                "dish_name": data.get("dish_name"),
+                "dish_description": data.get("dish_describe"),
+                "dish_price": data.get("dish_price"),
+                "dish_photo": data.get("dish_photo")
+            })
+        else:
+            dish = Dish(
+                dish_name=data.get("dish_name"),
+                dish_description=data.get("dish_describe"),
+                dish_price=data.get("dish_price"),
+                dish_photo=data.get("dish_photo"),
+                category=data.get("category_id")
+            )
+            session.add(dish)
+        session.commit()
 
     @staticmethod
     def get_dishes(category):

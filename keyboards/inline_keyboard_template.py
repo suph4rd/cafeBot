@@ -15,7 +15,7 @@ def get_template_keyboard():
     button_list = [[InlineKeyboardButton(text="Добавить новый шаблон", callback_data="add_new_template")]]
     button_list_pref = [[InlineKeyboardButton(
         text=x.template_name,
-        callback_data=f"select_template:{x.template_name}"
+        callback_data=f"select_template:{x.template_name}:{x.id}"
     )]
         for x in Template.get_templates()]
 
@@ -38,7 +38,7 @@ def get_template_category_keyboard(template_name, template_id):
         for x in Category.get_catygoryes(template_id)]
 
     button_list += button_list_pref                                                         # mb + template_id???
-    button_list.append([InlineKeyboardButton(text="Назад", callback_data=f"select_template:{template_name}")])
+    button_list.append([InlineKeyboardButton(text="Назад", callback_data=f"select_template:{template_name}:{template_id}")])
 
     category_keyboard = InlineKeyboardMarkup(
         inline_keyboard=button_list
