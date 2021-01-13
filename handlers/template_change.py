@@ -4,7 +4,7 @@ from aiogram.utils.markdown import hbold
 from database.database import Template, Category, Dish
 from initialise import dp
 from keyboards.inline_keyboard_template import get_template_keyboard, template_change_keyboard, \
-    get_template_category_keyboard, get_template_category_dishes_keyboard
+    get_template_category_keyboard, get_template_category_dishes_keyboard, dish_keyboard
 from states.states import ChangeTemplate
 
 
@@ -71,6 +71,38 @@ async def template_edit_add_category_handler(call: types.CallbackQuery, state: F
     await call.message.edit_text(
         text=hbold(f"Введите название категории"),
     )
+
+
+@dp.callback_query_handler(text="template_edit_category_add_select_delete", state=ChangeTemplate)
+async def template_edit_category_add_select_delete_handler(call: types.CallbackQuery, state: FSMContext, *args, **kwargs):
+    data = await state.get_data()
+    dish_id = data.get("dish_id")
+    Dish.drop_dish(dish_id)
+    data.pop("dish_name")
+    data.pop("dish_describe")
+    data.pop("dish_price")
+    data.pop("dish_photo")
+    data.pop("dish_id")
+    await state.update_data(data=data)
+    await template_edit_category_handler(call, state)
+
+
+@dp.callback_query_handler(text_startswith="template_edit_category_add_select", state=ChangeTemplate)
+async def template_edit_category_add_select_handler(call: types.CallbackQuery, state: FSMContext, *args, **kwargs):
+    dish_name = call.data.split(":")[1]
+    dish_id = call.data.split(":")[2]
+    dish_query = Dish.get_dish(dish_id)
+    await state.update_data({
+        "dish_id": dish_query.id,
+        "dish_name": dish_query.dish_name,
+        "dish_description": dish_query.dish_description,
+        "dish_price": dish_query.dish_price,
+        "dish_photo": dish_query.dish_photo
+    })
+    await call.message.edit_text(
+        text=hbold(f"Работа с блюдом {dish_name}"),
+        reply_markup=dish_keyboard
+        )
 
 
 @dp.callback_query_handler(text="template_edit_category_delete", state=ChangeTemplate)

@@ -105,10 +105,3 @@ async def admin_main_menu_handler(message: types.Message, *args, **kwargs):
 async def admin_main_menu_handler_back(call: types.CallbackQuery, *args, **kwargs):
     await call.message.delete()
     await admin_main_menu_handler(call.message)
-
-
-# @dp.message_handler(content_types=['photo'])
-# @check_autorization
-# async def start_handler(message):
-#     await message.photo[-1].download(f"photo/{message.photo[-1]['file_id']}.jpg")
-#     await message.answer("Фото сохранено!")

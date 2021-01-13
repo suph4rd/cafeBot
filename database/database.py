@@ -173,9 +173,11 @@ class Dish(base):
 
     @staticmethod
     def add_or_update_dish(data):
-        is_exists = session.query(exists().where(Dish.id == data.get("dish_id"))) if data.get("dish_id") else None
+        print(data.get("dish_id"))
+        is_exists = session.query(exists().where(Dish.id == data.get("dish_id"))).scalar() if data.get("dish_id") else None
+        print(is_exists)
         if is_exists:
-            session.query(OrderList).filter(Dish.id == data.get("dish_id")) \
+            session.query(Dish).filter(Dish.id == data.get("dish_id")) \
                 .update({
                 "dish_name": data.get("dish_name"),
                 "dish_description": data.get("dish_describe"),
@@ -191,6 +193,20 @@ class Dish(base):
                 category=data.get("category_id")
             )
             session.add(dish)
+        session.commit()
+
+    @staticmethod
+    def get_dish(dish_id):
+        query = session.query(Dish)\
+            .filter(Dish.id == dish_id) \
+            .all()[0]
+        return query
+
+    @staticmethod
+    def drop_dish(dish_id):
+        session.query(Dish) \
+            .filter(Dish.id == dish_id) \
+            .delete()
         session.commit()
 
     @staticmethod
