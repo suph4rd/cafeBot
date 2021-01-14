@@ -6,7 +6,7 @@ from aiogram.utils.markdown import hbold
 from config import ADMIN_ID
 from database.database import Dish, OrderList
 from handlers import admin_handlers, autorization
-from handlers.decorators import check_authorization, check_order_today, get_user_id
+from handlers.decorators import check_authorization, check_order_today, get_user_id, check_active_menu
 from initialise import dp
 from keyboards.inline_keyboard import menu_keyboard, get_inline_keyboard_markup, \
     get_category_keyboard, get_back
@@ -23,6 +23,8 @@ async def change_user_handler(call: CallbackQuery, state: FSMContext, *args, **k
 
 @dp.callback_query_handler(text=["menu", "to_menu"], state=OrderUser.start_order)
 @check_order_today
+@check_active_menu
+@check_active_menu
 async def menu_handler(call: CallbackQuery, *args, **kwargs):
     '''Select category'''
     user_id = get_user_id(call)
@@ -39,6 +41,7 @@ async def menu_handler(call: CallbackQuery, *args, **kwargs):
 
 @dp.callback_query_handler(text=["order_user"], state=OrderUser.start_order)
 @check_order_today
+@check_active_menu
 async def order_user_handler(call: CallbackQuery, state: FSMContext, *args, **kwargs):
     '''Select category'''
     data = await state.get_data()
@@ -67,6 +70,7 @@ async def order_user_handler(call: CallbackQuery, state: FSMContext, *args, **kw
 
 @dp.callback_query_handler(text_startswith=["accept_order"], state=OrderUser.start_order)
 @check_order_today
+@check_active_menu
 async def accept_order_handler(call: CallbackQuery, state: FSMContext, *args, **kwargs):
     data = await state.get_data()
     data_set = data.get("data_set")
@@ -82,6 +86,7 @@ async def accept_order_handler(call: CallbackQuery, state: FSMContext, *args, **
 
 @dp.callback_query_handler(text_startswith=["remove_dish"], state=OrderUser.start_order)
 @check_order_today
+@check_active_menu
 async def remove_dish_handler(call: CallbackQuery, state: FSMContext, *args, **kwargs):
     dish = call.data.split(":")[1]
     data = await state.get_data()
@@ -94,6 +99,7 @@ async def remove_dish_handler(call: CallbackQuery, state: FSMContext, *args, **k
 
 @dp.callback_query_handler(text_startswith="dish", state=OrderUser.start_order)
 @check_order_today
+@check_active_menu
 async def dish_handler(call: CallbackQuery, *args, **kwargs):
     '''Select dishes'''
     dish = call.data.split(':')[1]
@@ -101,7 +107,7 @@ async def dish_handler(call: CallbackQuery, *args, **kwargs):
     await call.message.edit_text(text=hbold("ВЫБЕРИТЕ БЛЮДО"))
     for val in dishes:
         if val.dish_photo:
-            with open(f"./photo/{val.dish_photo}", "rb") as photo:
+            with open(f"./{val.dish_photo}", "rb") as photo:
                 await call.message.answer_photo(photo=photo)
         await call.message.answer(
             text=f"Название: {val.dish_name}\n"
@@ -117,6 +123,7 @@ async def dish_handler(call: CallbackQuery, *args, **kwargs):
 
 @dp.callback_query_handler(text_startswith="add_dish", state=OrderUser.start_order)
 @check_order_today
+@check_active_menu
 async def add_dish_handler(call: CallbackQuery, state: FSMContext, *args, **kwargs):
     '''Select dishes'''
     dish = call.data.split(':')[1]

@@ -1,10 +1,10 @@
 from aiogram.utils.markdown import hbold
-from database.database import OrderList, User
+from database.database import OrderList, User, Template
 from handlers.decorators import check_admin, check_authorization
 from aiogram import types
 from initialise import dp
 from keyboards.inline_keyboard import admin_main_menu_keyboards, get_inline_keyboard_markup, get_back, \
-    get_admin_change_user_handler, keyboard_admin_menu_status
+    get_admin_change_user_handler, get_keyboard_admin_menu_status
 
 
 @dp.callback_query_handler(text_startswith="admin_order_list")
@@ -75,13 +75,49 @@ async def admin_change_user_handler(call: types.CallbackQuery, *args, **kwargs):
     await get_back(call, callback_data="to_admin_main_menu")
 
 
+@dp.callback_query_handler(text="menu_today_false")
+async def menu_today_false_handler(call: types.CallbackQuery, *args, **kwargs):
+    Template.set_false()
+    await call.answer("Меню не активно!")
+    await admin_menu_status_handler(call)
+
+
+@dp.callback_query_handler(text="select_menu_today")
+async def select_menu_today_handler(call: types.CallbackQuery, *args, **kwargs):
+    await call.message.edit_text("Выбор меню на сегодня")
+    templates = Template.get_templates()
+    for num, template in enumerate(templates, start=1):
+        await call.message.answer(
+            text=f"{num}. {hbold(template.template_name)}\n",
+            reply_markup=get_inline_keyboard_markup(
+                text=f"Выбрать {template.template_name}",
+                callback_data=f"select_menu_today_active:{template.id}"
+            )
+        )
+
+@dp.callback_query_handler(text_startswith="select_menu_today_active")
+async def select_menu_today_handler(call: types.CallbackQuery, *args, **kwargs):
+    # все меню сегодня Null, а выбранное True, redirect на admin_menu_status
+    template_id = call.data.split(":")[1]
+    ok = Template.set_active_menu(template_id)
+    while not ok:
+        pass
+    await admin_menu_status_handler(call, active_menu=True)
+
+
 @dp.callback_query_handler(text="admin_menu_status")
 async def admin_menu_status_handler(call: types.CallbackQuery, *args, **kwargs):
-    # запрос на статус меню
-    await call.message.edit_text(
-        text=hbold("Меню не выставлено!"),
-        reply_markup=keyboard_admin_menu_status
-    )
+    menu_status = Template.get_menu_status()
+    if kwargs.get("active_menu"):
+        await call.message.answer(
+            text=f"Статус меню: {hbold(menu_status)}",
+            reply_markup=get_keyboard_admin_menu_status(menu_status)
+        )
+    else:
+        await call.message.edit_text(
+            text=f"Статус меню: {hbold(menu_status)}",
+            reply_markup=get_keyboard_admin_menu_status(menu_status)
+        )
 
 
 @dp.message_handler()
@@ -98,10 +134,3 @@ async def admin_main_menu_handler(message: types.Message, *args, **kwargs):
 async def admin_main_menu_handler_back(call: types.CallbackQuery, *args, **kwargs):
     await call.message.delete()
     await admin_main_menu_handler(call.message)
-
-
-# @dp.message_handler(content_types=['photo'])
-# @check_autorization
-# async def start_handler(message):
-#     await message.photo[-1].download(f"photo/{message.photo[-1]['file_id']}.jpg")
-#     await message.answer("Фото сохранено!")

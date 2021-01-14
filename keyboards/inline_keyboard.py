@@ -1,8 +1,8 @@
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.markdown import hbold
-
 from database.database import Category, User
+
 
 menu_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -14,9 +14,9 @@ menu_keyboard = InlineKeyboardMarkup(
 
 
 def get_category_keyboard():
-    '''
-    :return: keyboard with loop of category buttons
-    '''
+    """
+    :return: Keyboard with loop of category buttons
+    """
     button_list = [[InlineKeyboardButton(text="Мой заказ", callback_data="order_user")]]
     button_list_pref = [[InlineKeyboardButton(
         text=x.category_name,
@@ -43,11 +43,11 @@ admin_main_menu_keyboards = InlineKeyboardMarkup(
 
 
 def get_inline_keyboard_markup(text, callback_data):
-    '''
+    """
     :param text: text in button
     :param callback_data: callback function for treatment button
     :return: keyboard with 1 button for loop
-    '''
+    """
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
         text=text,
         callback_data=callback_data
@@ -56,6 +56,9 @@ def get_inline_keyboard_markup(text, callback_data):
 
 
 async def get_back(call: types.CallbackQuery, callback_data):
+    """
+    :return: Keyboard with button for come back
+    """
     await call.message.answer(
         text=hbold("Назад"),
         reply_markup=get_inline_keyboard_markup(
@@ -66,6 +69,11 @@ async def get_back(call: types.CallbackQuery, callback_data):
 
 
 def get_admin_change_user_handler(user_id, status=None):
+    """
+    :param user_id: id user's for make his active or inactive
+    :param status: current user status
+    :return: Keyboard for user edit
+    """
     if not isinstance(status, bool):
         status = User.check_user_is_active(user_id)
     status_name = "неактивным" if status else "активным"
@@ -81,11 +89,22 @@ def get_admin_change_user_handler(user_id, status=None):
     return keyboard
 
 
-keyboard_admin_menu_status = InlineKeyboardMarkup(
-    inline_keyboard=[
+def get_keyboard_admin_menu_status(status):
+    """
+    :param status: status of current menu state
+    :return: Keyboard for admin_menu_change
+    """
+    inline_keyboard = [
         [InlineKeyboardButton(text="Выбор меню на сегодня", callback_data="select_menu_today")],
-        [InlineKeyboardButton(text="Сделать меню неактивным", callback_data="menu_today_false")],
         [InlineKeyboardButton(text="Работа с шаблонами", callback_data="template_change")],
         [InlineKeyboardButton(text="Назад", callback_data="to_admin_main_menu")]
     ]
-)
+    button = None
+    if status == "Меню активно":
+        button = [InlineKeyboardButton(text="Сделать меню неактивным", callback_data="menu_today_false")]
+    if button: inline_keyboard.insert(0, button)
+    keyboard_admin_menu_status = InlineKeyboardMarkup(
+        inline_keyboard=inline_keyboard
+
+    )
+    return keyboard_admin_menu_status
