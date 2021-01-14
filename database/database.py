@@ -3,9 +3,8 @@ from sqlalchemy import Column, Integer, String, create_engine, DECIMAL, ForeignK
     DateTime, Boolean, exists, Date
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-
-# postgresql://example:example@localhost:5432/example
 from config import DB_USER, DB_PASSWORD, DB_DOMAIN, DB_PORT, DB_NAME
+
 
 engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_DOMAIN}:{DB_PORT}/{DB_NAME}")
 base = declarative_base()
