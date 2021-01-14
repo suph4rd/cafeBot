@@ -1,6 +1,8 @@
 import aiogram
+from aiogram import types
+
 from config import ADMIN_ID
-from database.database import User, OrderList
+from database.database import User, OrderList, Template
 from states.states import Registration
 
 
@@ -61,4 +63,22 @@ def check_order_today(func):
             await message.answer("Извените, но вы уже сделали заказ на сегодня! Приходите завтра!")
         else:
             await func(message, state) if state else await func(message)
+    return wrapper
+
+
+def check_active_menu(func):
+    async def wrapper(message, state=None, *args, **kwargs):
+        from handlers.user_handlers import main_menu_handler
+        if Template.get_menu_status() == "Меню активно":
+            await func(message, state, args, kwargs) if state else await func(message, args, kwargs)
+        elif Template.get_menu_status() == "Меню не активно":
+            if isinstance(message, types.CallbackQuery):
+                await message.answer("Меню уже недоступно! Приходите завтра!")
+                await main_menu_handler(message.message)
+            else:
+                await main_menu_handler(message)
+                await message.answer("Меню уже недоступно! Приходите завтра!")
+        else:
+            await main_menu_handler(message)
+            await message.answer("Меню на сегодня ещё не составлено! Приходите позже!")
     return wrapper
