@@ -5,10 +5,10 @@ from states.states import Registration
 
 
 def get_user_id(message):
-    '''
+    """
     Function for decorators
     :return: user_id for decorators
-    '''
+    """
     if isinstance(message, aiogram.types.callback_query.CallbackQuery):
         user_id = message['from']['id']
     else:
@@ -17,10 +17,10 @@ def get_user_id(message):
 
 
 def check_authorization(func):
-    '''
+    """
     Decorator for authorization and registration
     :param func: handler_function
-    '''
+    """
     async def wrapper(message):
         user_id = get_user_id(message)
         exists = User.check_user_exists(user_id)
@@ -37,10 +37,10 @@ def check_authorization(func):
 
 
 def check_admin(func):
-    '''
+    """
     Decorator is check admin status of user
     :param func: handler_function
-    '''
+    """
     async def wrapper(message):
         user_id = get_user_id(message)
         if user_id == ADMIN_ID:
@@ -52,9 +52,7 @@ def check_admin(func):
 
 
 def check_order_today(func):
-    '''
-    checks if the user made an order today
-    '''
+    """checks if the user made an order today"""
     async def wrapper(message, **kwargs):
         user_id = get_user_id(message)
         state = kwargs.get("state")

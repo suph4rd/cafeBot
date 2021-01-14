@@ -101,7 +101,7 @@ async def dish_handler(call: CallbackQuery, *args, **kwargs):
     await call.message.edit_text(text=hbold("ВЫБЕРИТЕ БЛЮДО"))
     for val in dishes:
         if val.dish_photo:
-            with open(f"./photo/{val.dish_photo}", "rb") as photo:
+            with open(f"./{val.dish_photo}", "rb") as photo:
                 await call.message.answer_photo(photo=photo)
         await call.message.answer(
             text=f"Название: {val.dish_name}\n"

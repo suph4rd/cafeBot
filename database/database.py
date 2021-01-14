@@ -105,6 +105,20 @@ class Template(base):
         return query
 
     @staticmethod
+    def set_active_menu(template_id):
+        today = datetime.date.today()
+        session.query(Template).filter(Template.date_update == today) \
+            .update({"is_active": None})
+        # session.commit()
+        session.query(Template).filter(Template.id == template_id) \
+            .update({
+            "is_active": True,
+            "date_update": today
+        })
+        session.commit()
+        return True
+
+    @staticmethod
     def set_false():
         session.query(Template).filter(Template.is_active == True) \
             .filter(Template.date_update == datetime.date.today())\

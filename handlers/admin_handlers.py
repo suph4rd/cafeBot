@@ -82,13 +82,42 @@ async def menu_today_false_handler(call: types.CallbackQuery, *args, **kwargs):
     await admin_menu_status_handler(call)
 
 
+@dp.callback_query_handler(text="select_menu_today")
+async def select_menu_today_handler(call: types.CallbackQuery, *args, **kwargs):
+    await call.message.edit_text("Выбор меню на сегодня")
+    templates = Template.get_templates()
+    for num, template in enumerate(templates, start=1):
+        await call.message.answer(
+            text=f"{num}. {hbold(template.template_name)}\n",
+            reply_markup=get_inline_keyboard_markup(
+                text=f"Выбрать {template.template_name}",
+                callback_data=f"select_menu_today_active:{template.id}"
+            )
+        )
+
+@dp.callback_query_handler(text_startswith="select_menu_today_active")
+async def select_menu_today_handler(call: types.CallbackQuery, *args, **kwargs):
+    # все меню сегодня Null, а выбранное True, redirect на admin_menu_status
+    template_id = call.data.split(":")[1]
+    ok = Template.set_active_menu(template_id)
+    while not ok:
+        pass
+    await admin_menu_status_handler(call, active_menu=True)
+
+
 @dp.callback_query_handler(text="admin_menu_status")
 async def admin_menu_status_handler(call: types.CallbackQuery, *args, **kwargs):
     menu_status = Template.get_menu_status()
-    await call.message.edit_text(
-        text=f"Статус меню: {hbold(menu_status)}",
-        reply_markup=get_keyboard_admin_menu_status(menu_status)
-    )
+    if kwargs.get("active_menu"):
+        await call.message.answer(
+            text=f"Статус меню: {hbold(menu_status)}",
+            reply_markup=get_keyboard_admin_menu_status(menu_status)
+        )
+    else:
+        await call.message.edit_text(
+            text=f"Статус меню: {hbold(menu_status)}",
+            reply_markup=get_keyboard_admin_menu_status(menu_status)
+        )
 
 
 @dp.message_handler()
